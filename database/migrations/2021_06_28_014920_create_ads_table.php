@@ -22,7 +22,7 @@ class CreateAdsTable extends Migration
             $table->foreign('state')->references('id')->on('states');
             $table->string('title'); 
             $table->float('price', 10, 2);
-            $table->boolean('prince_negotiable');
+            $table->boolean('price_negotiable');
             $table->string('description')->nullable();
             $table->dateTime('created_at');         
             $table->integer('views');

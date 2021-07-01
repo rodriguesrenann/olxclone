@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Ad;
+
 class AdController extends Controller
 {
     public function getCategories()
@@ -40,8 +44,22 @@ class AdController extends Controller
         if ($request->hasFile('image')) {
             foreach ($request->allFiles() as $file) {
                 $file->store('public/ads');
+                $url = asset(Storage::url($file));
             }
         }
+
+        Ad::create([
+            'user_id' => Auth::id(),
+            'images' => $url??'',
+            'state'=> $request['state'],
+            'title' => $request['title'],
+            'price' => $request['price'],
+            'price_negotiable' => 1,
+            'description' => $request['description'],
+            'created_at' => date('Y-m-d H:i:s'),
+            'views' => 0,
+            'status' => 1
+        ]);
     }
 
     //todo

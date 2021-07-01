@@ -12,6 +12,8 @@ class Ad extends Model
     protected $table = 'ads';
 
     public $timestamps = false;
+    
+    protected $fillable = ['user_id', 'state', 'title', 'images', 'price', 'price_negotiable', 'status', 'views', 'created_at'];
 
     public function state()
     {
