@@ -19,4 +19,9 @@ class Ad extends Model
     {
         return $this->belongsTo(State::class, 'state', 'id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

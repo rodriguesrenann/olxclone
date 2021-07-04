@@ -35,7 +35,7 @@ class AdController extends Controller
             'images[]' => 'file|mimes:jpg,png',
             'state' => 'required|integer|exists:states,id',
             'title' => 'required|string|min:4',
-            'price' => 'required|numeric',
+            'price' => 'required',
             'description' => 'min:5|string',
         ]);
 
@@ -117,9 +117,9 @@ class AdController extends Controller
         $ad->save();
 
         //infos do usuario que fez o anuncio
-        $user = User::where('id', $ad['user_id'])->select('name', 'email', 'state')->first();
+        $user = $ad->user->first();
         $userState = State::where('id', $user['state'])->first();
-        $user['state'] = $userState['name'];
+        $ad['user']['state'] = $userState['name'];
 
         //organizr url das imagens
         $imagesArray = [];
@@ -131,7 +131,6 @@ class AdController extends Controller
         //pegar somente o nome do estado
         $state = State::where('id', $ad['state'])->first();
 
-
         $ad['images'] = $imagesArray;
         $ad['state'] = $state['name'];
 
@@ -141,14 +140,78 @@ class AdController extends Controller
             $othersAds = Ad::where('user_id', $ad['user_id'])->where('status', 1)->get();
             foreach ($othersAds as $otherAd) {
                 if ($otherAd['id'] !== $ad['id']) {
+                    $otherAd['images'] = asset('storage/ads/' . $otherAd['images']);
                     $arrayAds[] = $otherAd;
                 }
             }
         }
         return response()->json([
             'adInfo' => $ad,
-            'userInfo' => $user,
             'others' => $arrayAds
+        ], 200);
+    }
+
+    public function editAd(Request $request, $id)
+    {
+        $ad = Ad::where('id', $id)->where('user_id', Auth::id())->first();
+
+        if (!$ad) {
+            return response()->json([
+                'error' => 'Anuncio não encontrado'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'images[]' => 'file|mimes:jpg,png',
+            'state' => 'integer|exists:states,id',
+            'title' => 'string|min:4',
+            'description' => 'min:5|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => $validator->errors()->first()
+            ], 400);
+        }
+
+        $ad->title = $request['title'] ?? $ad->title;
+        $ad->price = $request['price'] ?? $ad->price;
+        $ad->description = $request['description'] ?? $ad->description;
+        $ad->status = $request['status'] ?? $ad->status;
+
+        if ($request->hasFile('images')) {
+            foreach ($request['images'] as $file) {
+                $url = $file->store('public/ads');
+                $url = explode('/', $url);
+                $url = $url[2];
+                $array[] = $url;
+            }
+
+            $ad->images = $ad->images .','.$url;
+        }
+        $url = implode(',', $array);
+
+        $ad->save();
+
+        return response()->json([
+            'success' => 'Anuncio alterado'
+        ], 200);
+    }
+
+    public function deleteAd($id)
+    {
+        $ad = Ad::where('id', $id)->where('user_id', Auth::id())->first();
+
+        if(!$ad) {
+            return response()->json([
+                'error' => 'Anuncio não encontrado'
+            ], 404);
+        }
+
+        $ad->delete();
+
+        return response()->json([
+            'success' => 'Anuncio deletado com sucesso'
         ], 200);
     }
 }

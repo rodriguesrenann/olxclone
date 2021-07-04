@@ -3,9 +3,7 @@
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -33,4 +31,5 @@ Route::middleware('auth:api')->group(function(){
     Route::get('/ad', [AdController::class, 'getAds']);
     Route::get('/ad/{id}', [AdController::class, 'getItem']);
     Route::post('/ad/{id}', [AdController::class, 'editAd']);
+    Route::post('/ad/delete/{id}', [AdController::class, 'deleteAd']);
 });
