@@ -30,7 +30,7 @@ Route::middleware('auth:api')->group(function(){
     Route::put('/user', [UserController::class, 'editLoggedUserInfo']);
  
     Route::post('/ad', [AdController::class, 'newAd']);
-    Route::get('/ads', [AdController::class, 'getAds']);
-    Route::get('/ad/{item}', [AdController::class, 'getItem']);
+    Route::get('/ad', [AdController::class, 'getAds']);
+    Route::get('/ad/{id}', [AdController::class, 'getItem']);
     Route::post('/ad/{id}', [AdController::class, 'editAd']);
 });
