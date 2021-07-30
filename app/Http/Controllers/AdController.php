@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Image;
 
 use App\Models\Ad;
 use App\Models\Category;
 use App\Models\State;
-use App\Models\User;
 
 class AdController extends Controller
 {
@@ -29,7 +29,7 @@ class AdController extends Controller
 
     public function newAd(Request $request)
     {
-        $array = [];
+        
         $url = [];
         $validator = Validator::make($request->all(), [
             'images[]' => 'file|mimes:jpg,png',
@@ -46,14 +46,17 @@ class AdController extends Controller
         }
 
         if ($request->hasFile('images')) {
+            $names = [];
             foreach ($request['images'] as $file) {
-                $url = $file->store('public/ads');
-                $url = explode('/', $url);
-                $url = $url[2];
-                $array[] = $url;
+                $image = $file;
+                $imageName = $image->getClientOriginalName();
+                $fileName =  time().$imageName;
+                Image::make($image)->resize(500, 500)->save(public_path('assets/images/' . $fileName));
+                $names[] = $fileName;
             }
+
         }
-        $url = implode(',', $array);
+        $url = implode(',', $names);
 
         Ad::create([
             'user_id' => Auth::id(),
@@ -97,8 +100,21 @@ class AdController extends Controller
             ->limit(5)
             ->get();
 
+
+
+        foreach ($ads as $ad) {
+            $images = explode(',', $ad['images']);
+            $imagesArray = [];
+            foreach ($images as $img) {
+                $imagesArray[] = asset('assets/images/'.$img);
+            }
+
+            $ad['images'] = $imagesArray;
+            $ad['image'] = $imagesArray[0];
+        }
+
         return response()->json([
-            'ads' => $ads
+            'data' => $ads
         ], 200);
     }
 
@@ -125,7 +141,7 @@ class AdController extends Controller
         $imagesArray = [];
         $images = explode(',', $ad['images']);
         foreach ($images as $img) {
-            $imagesArray[] = asset('storage/ads/' . $img);
+            $imagesArray[] = asset('assets/images/'.$img);
         }
 
         //pegar somente o nome do estado
@@ -137,10 +153,17 @@ class AdController extends Controller
         $arrayAds = [];
 
         if ($request->has('others')) {
+            $otherImages = [];
             $othersAds = Ad::where('user_id', $ad['user_id'])->where('status', 1)->get();
             foreach ($othersAds as $otherAd) {
                 if ($otherAd['id'] !== $ad['id']) {
-                    $otherAd['images'] = asset('storage/ads/' . $otherAd['images']);
+                    $images = explode(',', $otherAd['images']);
+
+                    foreach ($images as $img) {
+                        $otherImages[] = asset('storage/ads/' . $img);
+                    }
+
+                    $otherAd['images'] = $otherImages;
                     $arrayAds[] = $otherAd;
                 }
             }
@@ -180,6 +203,7 @@ class AdController extends Controller
         $ad->status = $request['status'] ?? $ad->status;
 
         if ($request->hasFile('images')) {
+
             foreach ($request['images'] as $file) {
                 $url = $file->store('public/ads');
                 $url = explode('/', $url);
@@ -187,9 +211,12 @@ class AdController extends Controller
                 $array[] = $url;
             }
 
-            $ad->images = $ad->images .','.$url;
+
+            $url = implode(',', $array);
+
+            $ad->images = $ad->images . ',' . $url;
         }
-        $url = implode(',', $array);
+
 
         $ad->save();
 
@@ -202,7 +229,7 @@ class AdController extends Controller
     {
         $ad = Ad::where('id', $id)->where('user_id', Auth::id())->first();
 
-        if(!$ad) {
+        if (!$ad) {
             return response()->json([
                 'error' => 'Anuncio não encontrado'
             ], 404);

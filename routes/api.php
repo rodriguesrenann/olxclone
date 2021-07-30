@@ -17,6 +17,8 @@ Route::get('/401', [AuthController::class, 'unauthorized'])->name('login');
 Route::get('/states', [StateController::class, 'getStates']);
 Route::get('/categories', [AdController::class, 'getCategories']);
 
+Route::get('/ads', [AdController::class, 'getAds']);
+
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -28,7 +30,6 @@ Route::middleware('auth:api')->group(function(){
     Route::put('/user', [UserController::class, 'editLoggedUserInfo']);
  
     Route::post('/ad', [AdController::class, 'newAd']);
-    Route::get('/ad', [AdController::class, 'getAds']);
     Route::get('/ad/{id}', [AdController::class, 'getItem']);
     Route::post('/ad/{id}', [AdController::class, 'editAd']);
     Route::post('/ad/delete/{id}', [AdController::class, 'deleteAd']);
