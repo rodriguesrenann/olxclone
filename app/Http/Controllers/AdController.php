@@ -169,11 +169,16 @@ class AdController extends Controller
             }
         }
         return response()->json([
-            'adInfo' => $ad,
+            'data' => $ad,
             'others' => $arrayAds
         ], 200);
     }
 
+    public function teste()
+    {
+        return 'teste';
+    }
+    
     public function editAd(Request $request, $id)
     {
         $ad = Ad::where('id', $id)->where('user_id', Auth::id())->first();

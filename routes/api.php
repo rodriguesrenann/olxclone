@@ -28,9 +28,10 @@ Route::middleware('auth:api')->group(function(){
 
     Route::get('/user', [UserController::class, 'getLoggedUserInfo']);
     Route::put('/user', [UserController::class, 'editLoggedUserInfo']);
- 
+    
+    
+    Route::post('/ad/edit/{id}', [AdController::class, 'editAd']);
     Route::post('/ad', [AdController::class, 'newAd']);
     Route::get('/ad/{id}', [AdController::class, 'getItem']);
-    Route::post('/ad/{id}', [AdController::class, 'editAd']);
     Route::post('/ad/delete/{id}', [AdController::class, 'deleteAd']);
 });
