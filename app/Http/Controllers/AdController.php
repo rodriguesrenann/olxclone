@@ -29,7 +29,7 @@ class AdController extends Controller
 
     public function newAd(Request $request)
     {
-        
+
         $url = [];
         $validator = Validator::make($request->all(), [
             'images[]' => 'file|mimes:jpg,png',
@@ -50,11 +50,10 @@ class AdController extends Controller
             foreach ($request['images'] as $file) {
                 $image = $file;
                 $imageName = $image->getClientOriginalName();
-                $fileName =  time().$imageName;
+                $fileName =  time() . $imageName;
                 Image::make($image)->resize(500, 500)->save(public_path('assets/images/' . $fileName));
                 $names[] = $fileName;
             }
-
         }
         $url = implode(',', $names);
 
@@ -106,7 +105,7 @@ class AdController extends Controller
             $images = explode(',', $ad['images']);
             $imagesArray = [];
             foreach ($images as $img) {
-                $imagesArray[] = asset('assets/images/'.$img);
+                $imagesArray[] = asset('assets/images/' . $img);
             }
 
             $ad['images'] = $imagesArray;
@@ -141,7 +140,7 @@ class AdController extends Controller
         $imagesArray = [];
         $images = explode(',', $ad['images']);
         foreach ($images as $img) {
-            $imagesArray[] = asset('assets/images/'.$img);
+            $imagesArray[] = asset('assets/images/' . $img);
         }
 
         //pegar somente o nome do estado
@@ -153,32 +152,36 @@ class AdController extends Controller
         $arrayAds = [];
 
         if ($request->has('others')) {
-            $otherImages = [];
+
             $othersAds = Ad::where('user_id', $ad['user_id'])->where('status', 1)->get();
+
             foreach ($othersAds as $otherAd) {
+
                 if ($otherAd['id'] !== $ad['id']) {
+                    $array = [];
                     $images = explode(',', $otherAd['images']);
 
                     foreach ($images as $img) {
-                        $otherImages[] = asset('storage/ads/' . $img);
+                        $array[] = asset('assets/images/' . $img);
+                        $otherAd['images'] = $array;
                     }
 
-                    $otherAd['images'] = $otherImages;
+
                     $arrayAds[] = $otherAd;
                 }
             }
+            
+
+            $ad['others'] = $arrayAds;
         }
+
         return response()->json([
             'data' => $ad,
-            'others' => $arrayAds
         ], 200);
     }
 
-    public function teste()
-    {
-        return 'teste';
-    }
-    
+
+
     public function editAd(Request $request, $id)
     {
         $ad = Ad::where('id', $id)->where('user_id', Auth::id())->first();
